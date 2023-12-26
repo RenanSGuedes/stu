@@ -37,11 +37,17 @@ col1, col2 = st.columns(2)
 start_date = col1.date_input(
     "Data Inicial",
     value=df['time'].min(),
+    min_value=df['time'].min(),
+    max_value=df['time'].max(),
+    format="DD/MM/YYYY"
 )
 
 end_date = col2.date_input(
     "Data Final",
-    value=df['time'].max()
+    value=df['time'].max(),
+    min_value=df['time'].min(),
+    max_value=df['time'].max(),
+    format="DD/MM/YYYY"
 )
 
 # Convertendo datas de date para datetime
@@ -50,6 +56,10 @@ end_date = pd.to_datetime(end_date)
 
 # Filtrando DataFrame por sensor e datas
 df_filtered = df[(df['sensor'] == sensor_selected) & (df['time'] >= start_date) & (df['time'] <= end_date + pd.Timedelta(days=1))]
+
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Temperatura", f"{df_filtered.iloc[-1][2]:.2f}°C")
+col2.metric("Umidade", f"{df_filtered.iloc[-1][3]:.2f}%")
 
 # Plotando gráficos combinados de temperatura e umidade
 fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -85,5 +95,3 @@ fig.update_yaxes(title_text="Umidade", secondary_y=True)
 # Mostrando o gráfico combinado
 st.plotly_chart(fig, use_container_width=True)
 
-# Mostrando DataFrame
-st.dataframe(df_filtered, use_container_width=True, hide_index=True)
