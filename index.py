@@ -60,7 +60,7 @@ df_filtered = df[(df['sensor'] == sensor_selected) & (df['time'] >= start_date) 
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Temperatura", f"{df_filtered.iloc[-1][2]:.2f}°C")
 col2.metric("Umidade", f"{df_filtered.iloc[-1][3]:.2f}%")
-col3.metric("Data", df_filtered.iloc[-1][1].strftime("%H:%M:%S"))
+col3.metric("Última Atualização", df_filtered.iloc[-1][1].strftime("%H:%M:%S"))
 
 # Plotando gráficos combinados de temperatura e umidade
 fig = make_subplots(specs=[[{"secondary_y": True}]])
