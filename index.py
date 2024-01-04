@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
-import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime
 
 st.set_page_config(layout="wide")
@@ -19,7 +19,7 @@ def escrever_dados_firebase_em_dataframe(api_key, database_url):
         for data_hora, registro in registros.items():
             temp = registro.get('Temp: ', '')
             umid = registro.get('Umid: ', '')
-            data_formatada = formatar_data_hora(int(data_hora))
+            data_formatada = datetime.fromtimestamp(int(data_hora))
             dados_para_dataframe.append([sensor, data_formatada, temp, umid])
 
     df = pd.DataFrame(dados_para_dataframe, columns=['Sensor', 'Data/Horário', 'Temperatura (°C)', 'Umidade (%)'])
@@ -27,16 +27,31 @@ def escrever_dados_firebase_em_dataframe(api_key, database_url):
 
 def plotar_grafico(df, sensor_selecionado):
     df_filtrado = df[df['Sensor'] == sensor_selecionado]
-    fig = px.line(df_filtrado, x='Data/Horário', y=['Temperatura (°C)', 'Umidade (%)'], title=f'Dados do Sensor {sensor_selecionado}')
+
+    # Criando o gráfico com plotly.graph_objects
+    fig = go.Figure()
+
+    # Adicionando a série de Temperatura
+    fig.add_trace(go.Scatter(x=df_filtrado['Data/Horário'], y=df_filtrado['Temperatura (°C)'], 
+                             mode='lines', name='Temperatura (°C)'))
+
+    # Adicionando a série de Umidade
+    fig.add_trace(go.Scatter(x=df_filtrado['Data/Horário'], y=df_filtrado['Umidade (%)'], 
+                             mode='lines', name='Umidade (%)'))
+
+    # Atualizando layout do gráfico
+    fig.update_layout(title=f'Dados do Sensor {sensor_selecionado}',
+                      xaxis_title='Data e Hora',
+                      yaxis_title='Valores')
+
     st.plotly_chart(fig, use_container_width=True)
 
 def main():
-    st.title('Firebase Data to DataFrame com Filtragem e Gráfico')
+    st.title('Firebase Data to DataFrame com Filtragem e Gráfico Detalhado')
 
-    api_key = "AAIzaSyAEH4zVSmhB11xF0KiWzbqDs7F6b130fto"
-    database_url = "https://tarvos-electronic-default-rtdb.firebaseio.com"
+    api_key = st.secrets['api_key']
+    database_url = st.secrets['database_url']
 
-    
     if api_key and database_url:
         df = escrever_dados_firebase_em_dataframe(api_key, database_url)
 
