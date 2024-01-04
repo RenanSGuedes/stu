@@ -9,6 +9,7 @@ st.set_page_config(layout="wide")
 def formatar_data_hora(epoch_time):
     return datetime.fromtimestamp(epoch_time).strftime('%d/%m/%Y %H:%M:%S')
 
+@st.cache_resource
 def escrever_dados_firebase_em_dataframe(api_key, database_url):
     url = f'{database_url}/.json?auth={api_key}'
     response = requests.get(url)
@@ -55,7 +56,7 @@ def plotar_grafico(df, sensor_selecionado, data_inicio, data_fim):
     st.plotly_chart(fig, use_container_width=True)
 
 def main():
-    st.title('Firebase Data to DataFrame com Filtragem, Gráfico Detalhado e Filtros de Período')
+    st.title(':thermometer: Dados do Sensor de Temperatura e Umidade :desktop_computer:')
 
     api_key = st.secrets['api_key']
     database_url = st.secrets['database_url']
@@ -105,9 +106,9 @@ def main():
             with col4:
                 st.metric("Temperatura Máxima", f"{temperatura_max:.2f}°C")
             with col5:
-                st.metric("Última atualização", horario_recente.strftime('%H:%M:%S'))
+                st.metric("Última atualização do sensor", horario_recente.strftime('%H:%M:%S'))
 
-            plotar_grafico(df, sensor_selecionado, pd.Timestamp(data_inicio), pd.Timestamp(data_fim))
+            plotar_grafico(df, sensor_selecionado, pd.Timestamp(data_inicio), pd.Timestamp(data_fim) + pd.Timedelta(days=1))
     else:
         st.error('Por favor, insira a API Key e a URL do Banco de Dados Firebase.')
 
