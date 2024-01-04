@@ -1,98 +1,52 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import requests
+import plotly.express as px
+from datetime import datetime
 
-from functions import run_query
-
-# Configuração da página
 st.set_page_config(layout="wide")
 
-# Obtendo dados da planilha
-sheet_url = st.secrets["spreadsheet_stu"]
-query = f'SELECT * FROM "{sheet_url}"'
-rows = run_query(query)
+def formatar_data_hora(epoch_time):
+    return datetime.fromtimestamp(epoch_time).strftime('%d/%m/%Y %H:%M:%S')
 
-# Criando DataFrame
-df = pd.DataFrame(
-    rows,
-    columns=[
-        'sensor',
-        'time',
-        'temperature',
-        'humidity'
-    ]
-)
+def escrever_dados_firebase_em_dataframe(api_key, database_url):
+    url = f'{database_url}/.json?auth={api_key}'
+    response = requests.get(url)
+    dados = response.json()
 
-# Convertendo a coluna de tempo para datetime
-df['time'] = pd.to_datetime(df['time'], format='%Y-%m-%d %H:%M:%S')
-df = df.sort_values(by='time', ascending=True)
+    dados_para_dataframe = []
+    for sensor, registros in dados.items():
+        for data_hora, registro in registros.items():
+            temp = registro.get('Temp: ', '')
+            umid = registro.get('Umid: ', '')
+            data_formatada = formatar_data_hora(int(data_hora))
+            dados_para_dataframe.append([sensor, data_formatada, temp, umid])
 
-# Seletor de sensor
-sensor_selected = st.selectbox('Escolha o sensor', options=df['sensor'].unique())
+    df = pd.DataFrame(dados_para_dataframe, columns=['Sensor', 'Data/Horário', 'Temperatura (°C)', 'Umidade (%)'])
+    return df
 
-# Filtros de data
-col1, col2 = st.columns(2)
+def plotar_grafico(df, sensor_selecionado):
+    df_filtrado = df[df['Sensor'] == sensor_selecionado]
+    fig = px.line(df_filtrado, x='Data/Horário', y=['Temperatura (°C)', 'Umidade (%)'], title=f'Dados do Sensor {sensor_selecionado}')
+    st.plotly_chart(fig, use_container_width=True)
 
-start_date = col1.date_input(
-    "Data Inicial",
-    value=df['time'].min(),
-    min_value=df['time'].min(),
-    max_value=df['time'].max(),
-    format="DD/MM/YYYY"
-)
+def main():
+    st.title('Firebase Data to DataFrame com Filtragem e Gráfico')
 
-end_date = col2.date_input(
-    "Data Final",
-    value=df['time'].max(),
-    min_value=df['time'].min(),
-    max_value=df['time'].max(),
-    format="DD/MM/YYYY"
-)
+    api_key = "AAIzaSyAEH4zVSmhB11xF0KiWzbqDs7F6b130fto"
+    database_url = "https://tarvos-electronic-default-rtdb.firebaseio.com"
 
-# Convertendo datas de date para datetime
-start_date = pd.to_datetime(start_date)
-end_date = pd.to_datetime(end_date)
+    
+    if api_key and database_url:
+        df = escrever_dados_firebase_em_dataframe(api_key, database_url)
 
-# Filtrando DataFrame por sensor e datas
-df_filtered = df[(df['sensor'] == sensor_selected) & (df['time'] >= start_date) & (df['time'] <= end_date + pd.Timedelta(days=1))]
+        sensores = df['Sensor'].unique()
+        sensor_selecionado = st.selectbox('Escolha um Sensor', sensores)
 
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Temperatura", f"{df_filtered.iloc[-1][2]:.2f}°C")
-col2.metric("Umidade", f"{df_filtered.iloc[-1][3]:.2f}%")
-col3.metric("Última Atualização", df_filtered.iloc[-1][1].strftime("%H:%M:%S"))
+        if sensor_selecionado:
+            plotar_grafico(df, sensor_selecionado)
+    else:
+        st.error('Por favor, insira a API Key e a URL do Banco de Dados Firebase.')
 
-# Plotando gráficos combinados de temperatura e umidade
-fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-# Adicionando temperatura ao gráfico
-fig.add_trace(
-    go.Scatter(x=df_filtered['time'], y=df_filtered['temperature'], name='Temperatura', mode='lines'),
-    secondary_y=False,
-)
-
-# Adicionando umidade ao gráfico
-fig.add_trace(
-    go.Scatter(x=df_filtered['time'], y=df_filtered['humidity'], name='Umidade', mode='lines'),
-    secondary_y=True,
-)
-
-# Configurações do layout
-fig.update_layout(
-    title='Temperatura e Umidade ao Longo do Tempo',
-    xaxis=dict(
-        title='Tempo',
-        tickformat='%d/%m %H:%M',
-        tickangle=-45
-    )
-)
-
-# Configurações do eixo Y para temperatura
-fig.update_yaxes(title_text="Temperatura", secondary_y=False)
-
-# Configurações do eixo Y para umidade
-fig.update_yaxes(title_text="Umidade", secondary_y=True)
-
-# Mostrando o gráfico combinado
-st.plotly_chart(fig, use_container_width=True)
-
+if __name__ == '__main__':
+    main()
