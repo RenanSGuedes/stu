@@ -93,7 +93,7 @@ def main():
             umidade_max = df_filtrado['Umidade (%)'].max()
             temperatura_min = df_filtrado['Temperatura (°C)'].min()
             temperatura_max = df_filtrado['Temperatura (°C)'].max()
-            horario_recente = df_filtrado['Data/Horário'].max()
+            horario_recente = df_filtrado['Data/Horário'].max() - pd.Timedelta(hours=3)
 
             # Exibindo métricas
             col1, col2, col3, col4, col5 = st.columns(5)
@@ -106,7 +106,7 @@ def main():
             with col4:
                 st.metric("Temperatura Máxima", f"{temperatura_max:.2f}°C")
             with col5:
-                st.metric("Última atualização do sensor", horario_recente.strftime('%H:%M:%S'))
+                st.metric("Última atualização do sensor", (horario_recente).strftime('%H:%M:%S'))
 
             plotar_grafico(df, sensor_selecionado, pd.Timestamp(data_inicio), pd.Timestamp(data_fim) + pd.Timedelta(days=1))
     else:
