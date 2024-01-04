@@ -90,7 +90,7 @@ def main():
             umidade_max = df_filtrado['Umidade (%)'].max()
             temperatura_min = df_filtrado['Temperatura (°C)'].min()
             temperatura_max = df_filtrado['Temperatura (°C)'].max()
-            horario_recente = df_filtrado['Data/Horário'].max() - pd.Timedelta(hours=3)
+            horario_recente = df_filtrado['Data/Horário'].max()
 
             # Encontrando os valores atuais de temperatura e umidade
             valores_atuais = df_filtrado[df_filtrado['Data/Horário'] == horario_recente]
@@ -112,7 +112,7 @@ def main():
             with col4:
                 st.metric("Temperatura Máxima", f"{temperatura_max:.2f}°C" if temperatura_max is not None else "N/A")
             with col5:
-                st.metric("Última atualização do sensor", horario_recente.strftime('%H:%M:%S') if horario_recente is not None else "N/A")
+                st.metric("Última atualização do sensor", (horario_recente - pd.Timedelta(hours=3)).strftime('%H:%M:%S') if horario_recente is not None else "N/A")
 
             # Adicionando colunas para temperatura e umidade atuais
             col1, col2 = st.columns(2)
