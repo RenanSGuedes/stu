@@ -90,7 +90,7 @@ def main():
             umidade_max = df_filtrado['Umidade (%)'].max()
             temperatura_min = df_filtrado['Temperatura (°C)'].min()
             temperatura_max = df_filtrado['Temperatura (°C)'].max()
-            horario_recente = df_filtrado['Data/Horário'].max()
+            horario_recente = df_filtrado['Data/Horário'].max() - pd.Timedelta(hours=3)
 
             # Encontrando os valores atuais de temperatura e umidade
             valores_atuais = df_filtrado[df_filtrado['Data/Horário'] == horario_recente]
