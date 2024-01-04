@@ -112,7 +112,7 @@ def main():
             with col4:
                 st.metric("Temperatura Máxima", f"{temperatura_max:.2f}°C" if temperatura_max is not None else "N/A")
             with col5:
-                st.metric("Última atualização do sensor", (horario_recente - pd.Timedelta(hours=3)).strftime('%H:%M:%S') if horario_recente is not None else "N/A")
+                st.metric("Última atualização", datetime.now().strftime('%H:%M:%S') if horario_recente is not None else "N/A")
 
             # Adicionando colunas para temperatura e umidade atuais
             col1, col2 = st.columns(2)
