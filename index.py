@@ -116,7 +116,7 @@ def main():
             col1.metric("💧 Umidade Atual", f"{umidade_atual:.2f}%" if umidade_atual is not None else "N/A")
             col2.metric(":thermometer: Temperatura Atual", f"{temperatura_atual:.2f}°C" if temperatura_atual is not None else "N/A")
 
-            plotar_grafico(df, sensor_selecionado, pd.Timestamp(data_inicio), pd.Timestamp(data_fim))
+            plotar_grafico(df, sensor_selecionado, pd.Timestamp(data_inicio), pd.Timestamp(data_fim) + pd.Timedelta(days=1))
     else:
         st.error('Por favor, insira a API Key e a URL do Banco de Dados Firebase.')
 
