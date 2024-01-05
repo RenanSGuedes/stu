@@ -84,6 +84,7 @@ def main():
 
         if sensor_selecionado and data_inicio and data_fim:
             df_filtrado = df[(df['Sensor'] == sensor_selecionado) & (df['Data/Horário'] >= pd.Timestamp(data_inicio)) & (df['Data/Horário'] <= pd.Timestamp(data_fim) + pd.Timedelta(days=1))]
+            st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
 
             # Calculando métricas
             umidade_min = df_filtrado['Umidade (%)'].min()
@@ -103,23 +104,19 @@ def main():
 
             col1, col2, col3, col4, col5 = st.columns(5)
             # Exibindo métricas
-            with col1:
-                st.metric("Umidade Mínima", f"{umidade_min:.2f}%" if umidade_min is not None else "N/A")
-            with col2:
-                st.metric("Umidade Máxima", f"{umidade_max:.2f}%" if umidade_max is not None else "N/A")
-            with col3:
-                st.metric("Temperatura Mínima", f"{temperatura_min:.2f}°C" if temperatura_min is not None else "N/A")
-            with col4:
-                st.metric("Temperatura Máxima", f"{temperatura_max:.2f}°C" if temperatura_max is not None else "N/A")
-            with col5:
-                st.metric("Última atualização", (datetime.now() - timedelta(hours=3)).strftime('%H:%M:%S') if horario_recente is not None else "N/A")
-
+            
+            col1.metric("Umidade Mínima", f"{umidade_min:.2f}%" if umidade_min is not None else "N/A")
+            col2.metric("Umidade Máxima", f"{umidade_max:.2f}%" if umidade_max is not None else "N/A")
+            col3.metric("Temperatura Mínima", f"{temperatura_min:.2f}°C" if temperatura_min is not None else "N/A")
+            col4.metric("Temperatura Máxima", f"{temperatura_max:.2f}°C" if temperatura_max is not None else "N/A")
+            col5.metric("Última atualização", (datetime.now() - timedelta(hours=3)).strftime('%H:%M:%S') if horario_recente is not None else "N/A")
+            
             # Adicionando colunas para temperatura e umidade atuais
             col1, col2 = st.columns(2)
             col1.metric("💧 Umidade Atual", f"{umidade_atual:.2f}%" if umidade_atual is not None else "N/A")
             col2.metric(":thermometer: Temperatura Atual", f"{temperatura_atual:.2f}°C" if temperatura_atual is not None else "N/A")
 
-            plotar_grafico(df, sensor_selecionado, pd.Timestamp(data_inicio), pd.Timestamp(data_fim) + pd.Timedelta(days=1))
+            plotar_grafico(df, sensor_selecionado, pd.Timestamp(data_inicio), pd.Timestamp(data_fim))
     else:
         st.error('Por favor, insira a API Key e a URL do Banco de Dados Firebase.')
 
