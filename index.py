@@ -84,7 +84,6 @@ def main():
 
         if sensor_selecionado and data_inicio and data_fim:
             df_filtrado = df[(df['Sensor'] == sensor_selecionado) & (df['Data/Horário'] >= pd.Timestamp(data_inicio)) & (df['Data/Horário'] <= pd.Timestamp(data_fim) + pd.Timedelta(days=1))]
-            st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
 
             # Calculando métricas
             umidade_min = df_filtrado['Umidade (%)'].min()
